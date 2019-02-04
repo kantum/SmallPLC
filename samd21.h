@@ -21,9 +21,8 @@
 # define P_IN			0x20
 # define P_CTRL			0x24
 # define P_WRCONFIG		0x28
-# define P_PMUX0			0x30
-# define P_PMUX15		0x3f
-# define P_PINCFG0		0x40
+# define P_PMUX			0x30
+# define P_PINCFG		0x40
 # define P_PINCFG31		0x5f
 
 /* Power Manager Registers */

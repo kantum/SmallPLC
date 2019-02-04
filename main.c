@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "types.h"
+#include "hardware.h"
 #include "samd21.h"
 
 #define UART_BAUD    	9600
@@ -8,32 +9,7 @@
 
 #define UART_GCLK		8000000
 
-static inline u32	reg_rd(u32 reg)
-{
-	return( *(volatile u32 *)reg );
-}
 
-static inline void	reg8_wr(u32 reg, u8 value)
-{
-	*(volatile u8 *)reg = value;
-}
-
-static inline void	reg16_wr(u32 reg, u16 value)
-{
-	*(volatile u16 *)reg = value;
-}
-
-static inline void	reg_wr(u32 reg, u32 value)
-{
-	*(volatile u32 *)reg = value;
-}
-
-static inline void	reg_set(u32 reg, u32 value)
-{
-  *(volatile u32 *)reg = (*(volatile u32 *)reg | value);
-}
-
-/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 void	uart_putc(unsigned char c)
 {
 	/* Read INTFLAG and wait DRE (Data Register Empty) */
@@ -43,94 +19,87 @@ void	uart_putc(unsigned char c)
 	reg_wr((UART_ADDR + 0x28), c);
 }
 
-void	uart_puts(char *s)
-{
-	while(*s)
-	{
-		uart_putc(*s);
-		s++;
-	}
-}
-/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 void	init_clock(void)
 {
 	u32	v;
 
 	/* Configure clock source */
-	reg8_wr(PM_ADDR + PM_CPUSEL, 0x00); /* CPU clock select (CPUSEL)  */ 
-
+	reg8_wr(PM_ADDR + PM_CPUSEL, 0x00); /* CPU clock select (CPUSEL) DIV by 1*/
+	reg8_wr(PM_ADDR + PM_APBCSEL, 0x00); /* APBC clock select (APBCSEL) */
 	/* Configure internal 8MHz oscillator */
 	v = reg_rd(SYSCTRL_ADDR + SYSCTRL_OSC8M);
 	v &= 0xFFFFFC3F;                    /* Clear prescaler and OnDemand flag */
 	reg_wr(SYSCTRL_ADDR + SYSCTRL_OSC8M, v);
-
 	/* Wait for internal 8MHz oscillator stable and ready */
 	while( ! (reg_rd(SYSCTRL_ADDR + SYSCTRL_PCLKSR) & 0x08))
 		;
 	/* Set Divisor GCLK0 : enabled, OSC8M, no divisor */
-	reg_wr(GCLK_ADDR + GCLK_GENDIV, (1 << 8) | 0x00);
+	reg_wr(GCLK_ADDR + GCLK_GENDIV, (1 << 8) | 0x00); /* TODO */
 	/* Generic Clock Generator Enable */
-	reg_wr(GCLK_ADDR + GCLK_GENCTRL, (1 << 16)
+	reg_wr(GCLK_ADDR + GCLK_GENCTRL, (1 << 16) /* Enable */
 			| (0x06 << 8)					   /* Source Select -> OSC8M */
 			| 0x00);
 }
 
-/**
- * @brief Init of sercom interface
- *
- */
-void	sercom_init(u8 n, u8 clk)
+void	init_sercom(u8 n, u8 clk)
 {
 	reg_set(PM_ADDR + PM_APBCMASK, 1 << (n + 2));
 	reg16_wr (GCLK_ADDR + GCLK_CLKCTRL, (1 << 14) /* Clock enable */
 			| (clk << 8)                          /* GCLKGEN[clk] */
-			| 19 + n);                            /* SERCOM[n]_CORE */
+			| 20 + n);                            /* SERCOM[n]_CORE */
 }
 
-void	uart_init(void)
+void	init_uart(void)
 {
-	/* Configure Pin to Sercom0*/
+	/* Configure Pins */
+	reg8_wr((PORTA_ADDR + P_PINCFG + 8), 0x01); /* PA08 */
+	reg8_wr((PORTA_ADDR + P_PINCFG + 9), 0x01); /* PA09 */
+	/* Multiplexer for function C*/
+	reg8_wr((PORTA_ADDR + P_PMUX + 4), (0x02) | (0x02 << 4));
 
-	/* PA08 to be controlled */
-	reg8_wr((PORTA_ADDR + P_PINCFG0 + 8), 1);
-	/* Multiplexer for function C*/
-	reg8_wr((PORTA_ADDR + P_PMUX0), (0x2));
-	/* PA09 to be controlled */
-	reg8_wr((PORTA_ADDR + P_PINCFG0 + 9), 1);
-	/* Multiplexer for function C*/
-	reg8_wr((PORTA_ADDR + P_PMUX0), (0x2 << 4));
+	init_clock();
+	init_sercom(0, 1);
+
+	/* Configure UART */
+
 	/* Reset UART (set SWRST) */
 	reg_wr((UART_ADDR + CTRLA), 0x01);
 	/* Wait end of software reset */
 	while( reg_rd(UART_ADDR + CTRLA) & 0x01)
 		;
-
-	/* Configure UART */
-
 	/* DORD LSB, RXPO PAD[1], USART with internal clock */
-	reg_wr(UART_ADDR + 0x00, 0x40100004);
+	reg_wr(UART_ADDR + CTRLA, 0x40000000 /* DORD LSB first */
+			| 0x100000                   /* RXPO PAD[1] TXPO PAD[0] */
+			| 0x04);                     /* Internal Clock */
 	/* Enable TX and RX */
-	reg_wr(UART_ADDR + 0x04, 0x00030000);
+	reg_wr(UART_ADDR + CTRLB, 0x00030000);
 
 	/* Configure Baudrate */
-	reg_wr(UART_ADDR + 0x0C, CONF_BAUD_RATE);
+	reg16_wr(UART_ADDR + BAUD, CONF_BAUD_RATE);
+
+	reg_set(UART_ADDR, 0x02);
 }
 
 int		main(void)
 {
-    /* Configure Pin */
-	reg8_wr((PORTB_ADDR + P_PINCFG0 + 10), 0);
-    /* Configure PB10 (DIR) */
+	/* Configure Pin */
+	reg8_wr((PORTB_ADDR + P_PINCFG + 10), 0);
+	/* Configure PB10 (DIR) */
 	reg_wr(PORTB_ADDR + P_DIR, 1<<10);
-    /* Set PB10 value (OUT) */
-	reg_wr(PORTB_ADDR + P_OUT, 1<<10);
-    /* Configure PB11 (DIR) */
+	/* Set PB10 value (OUT) */
+	reg_wr(PORTB_ADDR + P_OUTCLR, 1<<10);
+	/* Configure PB11 (DIR) */
 	reg_set(PORTB_ADDR + P_DIR, 1<<11);
-    /* Set PB11 value (OUT) */
-	reg_set(PORTB_ADDR + P_OUT, 1<<11);
+	/* Set PB11 value (OUT) */
+	reg_set(PORTB_ADDR + P_OUTCLR, 1<<11);
+	reg_set(PORTB_ADDR + P_OUTTGL, 1<<11);           /* TODO TOGGLE LED TODO */
+
+	init_uart();
+
 	while (1)
 	{
 		uart_putc('a');
+		//reg_wr(PORTB_ADDR + P_OUTTGL, 1<<10);
 	}
 }
 /* EOF */
