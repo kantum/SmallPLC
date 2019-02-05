@@ -21,6 +21,7 @@
 #define PAC0_ADDR    ((u32)0x40000000)
 #define PM_ADDR      ((u32)0x40000400)
 #define SYSCTRL_ADDR ((u32)0x40000800)
+#define GCLK_ADDR    ((u32)0x40000C00)
 /* AHB-APB Bridge B */
 #define NVM_ADDR     ((u32)0x41004000)
 #define USB_ADDR     ((u32)0x41005000)

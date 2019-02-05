@@ -6,7 +6,7 @@
 # define PORTA_ADDR		((u32)0x41004400)
 # define PORTB_ADDR		((u32)0x41004480)
 # define PORTB			((u32)0x41004480)
-# define GCLK_ADDR		((u32)0x30000c00)
+//# define GCLK_ADDR		((u32)0x30000c00)
 # define UART_ADDR		((u32)0x42000800)
 
 /* PORT Registers */

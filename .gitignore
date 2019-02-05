@@ -50,3 +50,12 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Vim Sessions
+*.vim
+
+# Ctags Tags
+tags
+
+# Binaries
+*.bin

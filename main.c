@@ -7,9 +7,6 @@
 #define UART_GCLK    	8000000
 #define CONF_BAUD_RATE	(65536 - ((65536 * 16.0f * UART_BAUD) / UART_GCLK))
 
-#define UART_GCLK		8000000
-
-
 void	uart_putc(unsigned char c)
 {
 	/* Read INTFLAG and wait DRE (Data Register Empty) */
@@ -19,26 +16,21 @@ void	uart_putc(unsigned char c)
 	reg_wr((UART_ADDR + 0x28), c);
 }
 
-void	init_clock(void)
+void uart_puts(char *s)
 {
-	u32	v;
+	/* Loop to process each character */
+	while(*s)
+	{
+		/* Send one byte */
+		uart_putc(*s);
+		/* Move pointer to next byte */
+		s++;
+	}
+}
 
-	/* Configure clock source */
-	reg8_wr(PM_ADDR + PM_CPUSEL, 0x00); /* CPU clock select (CPUSEL) DIV by 1*/
-	reg8_wr(PM_ADDR + PM_APBCSEL, 0x00); /* APBC clock select (APBCSEL) */
-	/* Configure internal 8MHz oscillator */
-	v = reg_rd(SYSCTRL_ADDR + SYSCTRL_OSC8M);
-	v &= 0xFFFFFC3F;                    /* Clear prescaler and OnDemand flag */
-	reg_wr(SYSCTRL_ADDR + SYSCTRL_OSC8M, v);
-	/* Wait for internal 8MHz oscillator stable and ready */
-	while( ! (reg_rd(SYSCTRL_ADDR + SYSCTRL_PCLKSR) & 0x08))
-		;
-	/* Set Divisor GCLK0 : enabled, OSC8M, no divisor */
-	reg_wr(GCLK_ADDR + GCLK_GENDIV, (1 << 8) | 0x00); /* TODO */
-	/* Generic Clock Generator Enable */
-	reg_wr(GCLK_ADDR + GCLK_GENCTRL, (1 << 16) /* Enable */
-			| (0x06 << 8)					   /* Source Select -> OSC8M */
-			| 0x00);
+void uart_crlf(void)
+{
+	uart_puts("\r\n");
 }
 
 void	init_sercom(u8 n, u8 clk)
@@ -49,28 +41,29 @@ void	init_sercom(u8 n, u8 clk)
 			| 20 + n);                            /* SERCOM[n]_CORE */
 }
 
-void	init_uart(void)
+void	init_uart(u8 sercom)
 {
 	/* Configure Pins */
-	reg8_wr((PORTA_ADDR + P_PINCFG + 8), 0x01); /* PA08 */
-	reg8_wr((PORTA_ADDR + P_PINCFG + 9), 0x01); /* PA09 */
+	reg8_wr((PORTA_ADDR + P_PINCFG + 8), 0x01);   /* PA08 */
+	reg8_wr((PORTA_ADDR + P_PINCFG + 9), 0x01);   /* PA09 */
 	/* Multiplexer for function C*/
 	reg8_wr((PORTA_ADDR + P_PMUX + 4), (0x02) | (0x02 << 4));
-
-	init_clock();
-	init_sercom(0, 1);
-
-	/* Configure UART */
+	/* Set Divisor GCLK0 : enabled, OSC8M, no divisor */
+	reg_wr(GCLK_ADDR + GCLK_GENDIV, (1 << 8) | 0x00);
+	/* Generic Clock Generator Enable */
+	reg_wr(GCLK_ADDR + GCLK_GENCTRL, (1 << 16)    /* Enable */
+			| (0x06 << 8)					      /* Source Select -> OSC8M */
+			| 0x01);                              /* Select GCLK1 */
+	init_sercom(sercom, 1);
 
 	/* Reset UART (set SWRST) */
 	reg_wr((UART_ADDR + CTRLA), 0x01);
 	/* Wait end of software reset */
-	while( reg_rd(UART_ADDR + CTRLA) & 0x01)
+	while(reg_rd(UART_ADDR + CTRLA) & 0x01)
 		;
-	/* DORD LSB, RXPO PAD[1], USART with internal clock */
-	reg_wr(UART_ADDR + CTRLA, 0x40000000 /* DORD LSB first */
-			| 0x100000                   /* RXPO PAD[1] TXPO PAD[0] */
-			| 0x04);                     /* Internal Clock */
+	reg_wr(UART_ADDR + CTRLA, 0x40000000          /* DORD LSB first */
+			| 0x100000                            /* RXPO PAD[1] TXPO PAD[0] */
+			| 0x04);                              /* Internal Clock */
 	/* Enable TX and RX */
 	reg_wr(UART_ADDR + CTRLB, 0x00030000);
 
@@ -78,6 +71,10 @@ void	init_uart(void)
 	reg16_wr(UART_ADDR + BAUD, CONF_BAUD_RATE);
 
 	reg_set(UART_ADDR, 0x02);
+
+	reg_wr(PORTA_ADDR + P_DIR, 1 << 4);
+	reg_wr(PORTA_ADDR + P_OUTCLR, 1 << 4);
+
 }
 
 int		main(void)
@@ -92,14 +89,13 @@ int		main(void)
 	reg_set(PORTB_ADDR + P_DIR, 1<<11);
 	/* Set PB11 value (OUT) */
 	reg_set(PORTB_ADDR + P_OUTCLR, 1<<11);
-	reg_set(PORTB_ADDR + P_OUTTGL, 1<<11);           /* TODO TOGGLE LED TODO */
 
-	init_uart();
-
+	init_uart(0);
 	while (1)
 	{
-		uart_putc('a');
-		//reg_wr(PORTB_ADDR + P_OUTTGL, 1<<10);
+		uart_puts("bieres !");
+		uart_crlf();
 	}
 }
+
 /* EOF */
