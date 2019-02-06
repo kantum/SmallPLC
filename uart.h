@@ -18,14 +18,23 @@
 
 #include "types.h"
 
-void uart_crlf(void);
-void uart_dump(u8 *d, int l);
-void uart_init(u8 sercom);
-void uart_putc(unsigned char c);
-void uart_puts(char *s);
-void uart_puthex  (const u32 c);
-void uart_puthex8 (const u8  c);
-void uart_puthex16(const u16 c);
+void	uart_crlf(void);
+void	uart_dump(u8 *d, int l);
+void	uart_init(u8 sercom);
+void	uart_putc(unsigned char c);
+void	uart_puts(char *s);
+void	uart_puthex(const u32 c);
+void	uart_puthex8(const u8 c);
+void	uart_puthex16(const u16 c);
+
+/*
+ * TODO 
+ */
+void	sercom_init(u8 n, u8 clk);
+
+#define UART_BAUD    	9600
+#define UART_GCLK    	8000000
+#define CONF_BAUD_RATE	(65536 - ((65536 * 16.0f * UART_BAUD) / UART_GCLK))
 
 #endif
 /* EOF */

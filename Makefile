@@ -8,7 +8,7 @@
 CROSS=arm-none-eabi-
 TARGET=firmware
 
-SRC = main.c
+SRC = main.c uart.c
 ASRC = startup.s
 
 CC = $(CROSS)gcc
