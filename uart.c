@@ -74,11 +74,12 @@ void	uart_init(u8 sercom)
 	/* Configure Baudrate */
 	reg16_wr(UART_ADDR + BAUD, CONF_BAUD_RATE);
 
-	reg_set(UART_ADDR, 0x02);
-
+	/* Power up the PMOD Module */
 	reg_wr(PORTA_ADDR + P_DIR, 1 << 4);
 	reg_wr(PORTA_ADDR + P_OUTCLR, 1 << 4);
 
+	/* Set uart to on */
+	reg_set(UART_ADDR, 0x02);
 }
 
 //void uart_init(u8 sercom)
