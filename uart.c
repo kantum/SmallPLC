@@ -50,14 +50,17 @@ void	uart_init(u8 sercom)
 	/* Configure Pins */
 	reg8_wr((PORTA_ADDR + P_PINCFG + 8), 0x01);   /* PA08 */
 	reg8_wr((PORTA_ADDR + P_PINCFG + 9), 0x01);   /* PA09 */
+
 	/* Multiplexer for function C*/
 	reg8_wr((PORTA_ADDR + P_PMUX + 4), (0x02) | (0x02 << 4));
+	reg8_wr((PORTA_ADDR + P_PMUX + 5), (0x02) | (0x02 << 4));
 	/* Set Divisor GCLK0 : enabled, OSC8M, no divisor */
 	reg_wr(GCLK_ADDR + GCLK_GENDIV, (1 << 8) | 0x00);
 	/* Generic Clock Generator Enable */
 	reg_wr(GCLK_ADDR + GCLK_GENCTRL, (1 << 16)    /* Enable */
 			| (0x06 << 8)					      /* Source Select -> OSC8M */
 			| 0x01);                              /* Select GCLK1 */
+
 	sercom_init(sercom, 1);
 
 	/* Reset UART (set SWRST) */
@@ -75,10 +78,10 @@ void	uart_init(u8 sercom)
 	reg16_wr(UART_ADDR + BAUD, CONF_BAUD_RATE);
 
 	/* Power up the PMOD Module */
-	reg_wr(PORTA_ADDR + P_DIR, 1 << 4);
-	reg_wr(PORTA_ADDR + P_OUTCLR, 1 << 4);
+	reg_set(PORTA_ADDR + P_DIR, 1 << 4);
+	reg_set(PORTA_ADDR + P_OUTCLR, 1 << 4);
 
-	/* Set uart to on */
+	/* Set ENABLE into CTRLA */
 	reg_set(UART_ADDR, 0x02);
 }
 
