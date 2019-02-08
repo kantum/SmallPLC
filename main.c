@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include "types.h"
 #include "hardware.h"
 #include "samd21.h"
@@ -18,51 +17,12 @@ void	leds_init()
 	reg_wr(PORTB_ADDR + P_OUTCLR, 1 << 10 | 1 << 11);
 }
 
-/**
- * @brief Give the size of string
- * @param String to mesure
- */
-u32		strlen(u8 *str)
-{
-	u32	i;
-
-	i = -1;
-	while (str[++i])
-		return(i);
-}
-
-/**
- * @brief Put the octet from DATA to *str
- * @param str The addresse where to put the data
- */
-u8		uart_gets(u8 *str)
-{
-	int		i;
-
-	i = 0;
-	while (1)
-	{
-		/* Wait for start bit */
-		while ((reg8_rd(UART_ADDR + INTFLAG) & (1 << 2)) == 0)
-			;
-		/* Get the data */
-		str[i] = (reg16_rd(UART_ADDR + DATA));
-		if (str[i] == 0x0d || str[i] == '\0')
-			break;
-		i++;
-	}
-	str[i] = '\0';
-	return (strlen(str));
-}
-
 int		main(void)
 {
 	unsigned char	str[100];
 	unsigned int i;
 	uart_init(0);
 	leds_init();
-	uart_puts("hello");
-	uart_crlf();
 	while (1)
 	{
 		uart_gets(str);

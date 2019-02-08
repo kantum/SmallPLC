@@ -210,4 +210,30 @@ void uart_dump(u8 *buffer, int len)
 	}
 	uart_crlf();
 }
+
+/**
+ * @brief Put the octet from DATA to *str
+ * @param str The addresse where to put the data
+ */
+void	uart_gets(u8 *str)
+{
+	int		i;
+
+	i = 0;
+	while (1)
+	{
+		/* Wait for start bit */
+		while ((reg8_rd(UART_ADDR + INTFLAG) & (1 << 2)) == 0)
+			;
+		/* Get the data */
+		str[i] = (reg16_rd(UART_ADDR + DATA));
+		if (str[i] == '\n'
+		 || str[i] == '\0'
+		 || str[i] == '\r')
+			break;
+		i++;
+	}
+	str[i] = '\0';
+}
+
 /* EOF */

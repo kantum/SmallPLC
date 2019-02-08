@@ -26,6 +26,7 @@ void	uart_puts(char *s);
 void	uart_puthex(const u32 c);
 void	uart_puthex8(const u8 c);
 void	uart_puthex16(const u16 c);
+void	uart_gets(u8 *str);
 
 /*
  * TODO 
