@@ -8,6 +8,7 @@
 #define PORTB				((u32)0x41004480)
 //# define GCLK_ADDR			((u32)0x30000c00)
 #define UART_ADDR			((u32)0x42000800)
+#define SPI_ADDR			((u32)0x42001c00)
 
 /* PORT Registers */
 #define P_DIR				0x00
@@ -60,7 +61,7 @@
 #define	GCLK_GENCTRL		0x04
 #define	GCLK_GENDIV			0x08
 
-/* SERCOM USART */
+/* SERCOM USART SPI */
 #define CTRLA				0x00
 #define CTRLB				0x04
 #define BAUD				0x0c
@@ -73,4 +74,5 @@
 #define DATA				0x28
 #define DBGCTRL				0x30
 #define FIFOSPACE			0x34
+#define FIFOPTR				0x36
 #endif

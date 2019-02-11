@@ -29,9 +29,10 @@ void	uart_puthex16(const u16 c);
 void	uart_gets(u8 *str);
 
 /*
- * TODO 
+ * TODO Create a new file for this functions
  */
 void	sercom_init(u8 n, u8 clk);
+void	clock_init(void);
 
 #define UART_BAUD    	9600
 #define UART_GCLK    	8000000
