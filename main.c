@@ -3,6 +3,7 @@
 #include "samd21.h"
 #include "uart.h"
 #include "spi.h"
+#include "mcp2515.h"
 
 /**
  * @brief Initialize status leds
@@ -27,14 +28,10 @@ int		main(void)
 	unsigned int i;
 	leds_init();
 	clock_init();
-	uart_init(0);
-	spi_init(5);
+	uart_init(0);                  /* UART init on sercom0 */
+	spi_init(5);                   /*  SPI init on sercom5 */
 	while (1)
 	{
-		spi_putc('a');
-		uart_puts("DATA register: ");
-		uart_puthex(reg_rd(SPI_ADDR + DATA));
-		uart_crlf();
 		uart_gets(str);
 		uart_puts(str);
 		uart_crlf();

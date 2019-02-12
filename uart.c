@@ -244,4 +244,9 @@ void	uart_gets(u8 *str)
 	str[i] = '\0';
 }
 
+void	uart_debug(u8 *str)
+{
+	uart_puts(str);
+	uart_crlf();
+}
 /* EOF */
