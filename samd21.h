@@ -75,4 +75,7 @@
 #define DBGCTRL				0x30
 #define FIFOSPACE			0x34
 #define FIFOPTR				0x36
+
+void	sercom_init(u8 n, u8 clk);
+
 #endif

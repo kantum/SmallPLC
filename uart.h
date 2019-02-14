@@ -35,7 +35,7 @@ void	spi_putx(u32 hex);
 void	sercom_init(u8 n, u8 clk);
 void	clock_init(void);
 
-#define UART_BAUD    	9600
+#define UART_BAUD    	115200
 #define UART_GCLK    	8000000
 #define CONF_BAUD_RATE	(65536 - ((65536 * 16.0f * UART_BAUD) / UART_GCLK))
 
