@@ -28,8 +28,9 @@ void	can_reset(void);
 u8		can_rd_reg(u8 addr);
 u8		can_rd_rx(u8 buff, u8 ptr);
 void	can_wr_reg(u8 addr, u8 data);
-void	can_wr_tx(u8 buff, u8 ptr, u8 data);
+void	can_ld_tx(u8 buff, u8 ptr, u8 data);
 void	can_rts(u8 tx);
 void	can_bit_mod(u8 addr, u8 mask, u8 data);
 u8		can_rd_sta(void);
+u8		can_rx_sta(void);
 #endif

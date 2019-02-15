@@ -43,22 +43,13 @@ void	dump_memory(void)
  */
 int		main(void)
 {
-	unsigned char	str[100];
-
 	leds_init();
 	clock_init();
 	uart_init(0);                  /* UART init on sercom0 */
 	spi_init(5);                   /*  SPI init on sercom5 */
+
 	can_reset();
-	//can_wr_reg(0x00, 0xff);
-	//can_rd_reg(0x00);
-	//can_wr_reg(0x00, 0x0f);
-	//can_rd_reg(0x00);
-	//can_wr_tx(BUFF0, TXBnSIDH, 0x2a);
-	//can_rts(TXB0);
-	//uart_puthex8(can_rd_sta());
-	//uart_puthex8(can_rd_sta());
-	//uart_puthex8(can_rd_sta());
+	dump_memory();
 	while (1)
 	{
 	}

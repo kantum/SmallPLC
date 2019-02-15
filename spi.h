@@ -13,6 +13,8 @@ void	spi_putx(u32 hex);
 void	spi_cs(u8 status);
 u8		spi_read8(void);
 void	spi_wait_tx(void);
+void	spi_wait_rx(void);
+void	spi_flush_rx(void);
 
 #endif
 

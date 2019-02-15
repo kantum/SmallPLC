@@ -4,6 +4,18 @@
 //#include "uart.h"
 #include "spi.h"
 
+void	spi_flush_rx(void)
+{
+	reg16_rd((SPI_ADDR + DATA));
+}
+
+void	spi_wait_rx(void)
+{
+	/* Read INTFLAG and wait RXC (Receive Complete) */
+	while ((reg_rd(SPI_ADDR + INTFLAG) & 1 << 2) == 0)
+		;
+}
+
 void	spi_wait_tx(void)
 {
 	/* Read INTFLAG and wait TXC (Transmit Complete) */
@@ -14,13 +26,11 @@ void	spi_wait_tx(void)
 void	spi_cs(u8 status)
 {
 	if (status == ON)
-		reg_wr(PORTB_ADDR + P_OUTCLR, 1);
+		reg_wr(PORTB_ADDR + P_OUTCLR, 1 << 0);
 	else if (status == OFF)
 	{
-		/* Read INTFLAG and wait RXC (Receive Complete) */
-		while ((reg_rd(SPI_ADDR + INTFLAG) & 1 << 2) == 0)
-			;
-		spi_wait_tx();
+		//spi_wait_rx();
+		//spi_wait_tx();
 		reg_wr(PORTB_ADDR + P_OUTSET, 1 << 0);
 	}
 	else;
@@ -29,30 +39,36 @@ void	spi_cs(u8 status)
 u8		spi_read8(void)
 {
 	reg16_wr((SPI_ADDR + DATA), 0x0000);
+	spi_wait_rx();
 	return(reg16_rd((SPI_ADDR + DATA)));
 }
 
 void	spi_put8(u8 hex)
 {
-	reg16_wr((SPI_ADDR + DATA), ((hex & 0x000000ff) >>  0));
+	reg16_wr((SPI_ADDR + DATA), hex );
+	spi_wait_tx();
+	spi_wait_rx();
+	spi_flush_rx();
 }
 
 void	spi_put16(u16 hex)
 {
-	reg16_wr((SPI_ADDR + DATA), ((hex & 0x0000ff00) >>  8));
-	reg16_wr((SPI_ADDR + DATA), ((hex & 0x000000ff) >>  0));
+	spi_put8((hex & 0x0000ff00) >>  8);
+	spi_put8((hex & 0x000000ff) >>  0);
 }
 
 void	spi_putx(u32 hex)
 {
-	reg16_wr((SPI_ADDR + DATA), ((hex & 0xff000000) >> 24));
-	reg16_wr((SPI_ADDR + DATA), ((hex & 0x00ff0000) >> 16));
-	spi_wait_tx();
-	reg16_wr((SPI_ADDR + DATA), ((hex & 0x0000ff00) >>  8));
-	reg16_wr((SPI_ADDR + DATA), ((hex & 0x000000ff) >>  0));
-	spi_wait_tx();
+	spi_put8((hex & 0xff000000) >> 24);
+	spi_put8((hex & 0x00ff0000) >> 16);
+	spi_put8((hex & 0x0000ff00) >>  8);
+	spi_put8((hex & 0x000000ff) >>  0);
 }
 
+/*
+ * @brief Initialize spi module
+ * @param sercom Select which sercom to use
+ */
 void	spi_init(u8 sercom)
 {
 	/* Configure Pins */
