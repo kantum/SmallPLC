@@ -1,7 +1,15 @@
-#include "types.h"
-#include "spi.h"
-#include "uart.h"
 #include "mcp2515.h"
+
+/*
+ * @brief Reset mcp2515 with pin
+ */
+void	can_hw_reset(void)
+{
+	reg_wr((PORTA_ADDR + P_OUTTGL), 1 << 3);
+	reg_wr((PORTA_ADDR + P_OUTTGL), 1 << 3);
+	while (can_rd_sta() != 0)
+		;
+}
 
 /*
  * @brief Reset mcp2515 over spi

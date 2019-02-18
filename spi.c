@@ -78,6 +78,8 @@ void	spi_init(u8 sercom)
 	reg8_wr((PORTB_ADDR + P_PINCFG + 2), 0x01);      /* PB02 MOSI */
 	reg8_wr((PORTB_ADDR + P_PINCFG + 3), 0x01);      /* PB03 MISO */
 	reg_wr((PORTB_ADDR + P_DIRSET), 1 << 31);        /* PB31 PWR */
+	reg_wr((PORTA_ADDR + P_DIRSET), 1 << 3);         /* PA03 RESET */
+	reg_wr((PORTA_ADDR + P_OUTSET), 1 << 3);
 	reg_wr(PORTB_ADDR + P_OUTCLR, 1 << 31);          /* Power up PMOD Module */
 	/* Multiplexer for function D */
 	reg8_wr((PORTB_ADDR + P_PMUX + 0), (0x03 << 4)); /* PB01 */
