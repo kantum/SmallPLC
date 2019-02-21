@@ -13,15 +13,18 @@ void	can_hw_reset(void)
 
 /*
  * @brief Reset mcp2515 over spi
+ * @return Return 0 if reset succeed and 1 if it fails
  */
-void	can_reset(void)
+int		can_reset(void)
 {
+	u8 i;
 	spi_cs(ON);
 	spi_put8(RESET);
 	spi_cs(OFF);
-	/* TODO Avoid 3 repeat */
-	while (can_rd_sta() != 0)
-		;
+	while ((can_rd_reg(0x0e) != 0x80))
+		if (++i == 0)				/* Try 255 times */
+			return (1);
+	return (0);
 }
 
 /*
@@ -159,3 +162,63 @@ u8		can_rx_sta(void)
 	else;
 		// TODO What do I do here ???
 }
+
+/*
+ * @brief Debug output the mcp2515 memory
+ */
+void	dump_memory(u8 size)
+{
+	u8	can;
+
+	uart_crlf();
+	uart_puts("   ");
+	uart_puts("\e[32m"); 
+	for (u8 i = 0; i < size; i++)
+	{
+		uart_putc(' ');
+		uart_puthex8(i << 4);
+	}
+	uart_puts("\e[0m");
+	uart_crlf();
+	uart_crlf();
+	for (u16 i = 0; i <= 254; )
+	{
+		uart_puts("\e[32m"); 
+		uart_puthex8(i);
+		uart_puts("\e[0m");
+		uart_putc(' ');
+		uart_putc(' ');
+		for (u8 j = 0; j < size; )
+		{
+			can = can_rd_reg(i);
+			if (can != 0)
+			{
+				uart_puts("\e[33m"); 
+				uart_puthex8(can);
+				uart_puts("\e[0m");
+			}
+			else
+			{
+				uart_puts("\e[34m"); 
+				uart_puthex8(can);
+				uart_puts("\e[0m");
+			}
+			if ((size == 8 && i == 0x7f)
+					|| (size == 16 && i == 0xff))
+			{
+				uart_crlf();
+				uart_crlf();
+				return;
+			}
+			i += 0x10;
+			i &= 0xff;
+			j++;
+			uart_putc(' ');
+		}
+		if (size == 8)
+			i -= 0x80;
+		i++;
+		uart_crlf();
+	}
+}
+

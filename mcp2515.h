@@ -159,7 +159,10 @@
 #define RXB1D5		0x7B
 #define RXB1D6		0x7C
 
-void	can_reset(void);
+#define USABLE		8
+#define FULL		16
+
+int		can_reset(void);
 void	can_hw_reset(void);
 u8		can_rd_reg(u8 addr);
 u8		can_rd_rx(u8 buff, u8 ptr);
@@ -169,4 +172,5 @@ void	can_rts(u8 tx);
 void	can_bit_mod(u8 addr, u8 mask, u8 data);
 u8		can_rd_sta(void);
 u8		can_rx_sta(void);
+void	dump_memory(u8 size);
 #endif
