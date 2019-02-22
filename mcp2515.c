@@ -19,7 +19,7 @@ int		can_reset(void)
 {
 	u8 i;
 	spi_cs(ON);
-	spi_put8(RESET);
+	spi_transfer(RESET);
 	spi_cs(OFF);
 	while ((can_rd_reg(0x0e) != 0x80))
 		if (++i == 0)				/* Try 255 times */
@@ -36,9 +36,9 @@ u8		can_rd_reg(u8 addr)
 	u8 ret;
 
 	spi_cs(ON);
-	spi_put16((READ << 8) | addr);
-	spi_wait_tx();
-	ret = spi_read8();
+	spi_transfer(READ);
+	spi_transfer(addr);
+	ret = spi_transfer(0x0);
 	spi_cs(OFF);
 	return (ret);
 }
@@ -53,9 +53,8 @@ u8		can_rd_rx(u8 buff, u8 ptr)
 	u8	ret;
 
 	spi_cs(ON);
-	spi_put8(RDRX | (buff << 2) | (ptr << 1));
-	spi_wait_tx();
-	ret = spi_read8();
+	spi_transfer(RDRX | (buff << 2) | (ptr << 1));
+	ret = spi_transfer(0x0);
 	spi_cs(OFF);
 	return (ret);
 }
@@ -68,10 +67,9 @@ u8		can_rd_rx(u8 buff, u8 ptr)
 void	can_wr_reg(u8 addr, u8 data)
 {
 	spi_cs(ON);
-	spi_put8(WRITE);
-	spi_put8(addr);
-	spi_wait_tx();
-	spi_put8(data);
+	spi_transfer(WRITE);
+	spi_transfer(addr);
+	spi_transfer(data);
 	spi_cs(OFF);
 }
 
@@ -83,8 +81,8 @@ void	can_wr_reg(u8 addr, u8 data)
 void	can_ld_tx(u8 buff, u8 ptr, u8 data)
 {
 	spi_cs(ON);
-	spi_put8(LDTX | (buff << 1) | ptr);
-	spi_put8(data);
+	spi_transfer(LDTX | (buff << 1) | ptr);
+	spi_transfer(data);
 	spi_cs(OFF);
 }
 
@@ -95,7 +93,7 @@ void	can_ld_tx(u8 buff, u8 ptr, u8 data)
 void	can_rts(u8 tx)
 {
 	spi_cs(ON);
-	spi_put8(RTS | tx);
+	spi_transfer(RTS | tx);
 	spi_cs(OFF);
 }
 
@@ -108,7 +106,10 @@ void	can_rts(u8 tx)
 void	can_bit_mod(u8 addr, u8 mask, u8 data)
 {
 	spi_cs(ON);
-	spi_putx(BITM << 24 | addr << 16 | mask << 8 | data);
+	spi_transfer(BITM);
+	spi_transfer(addr);
+	spi_transfer(mask);
+	spi_transfer(data);
 	spi_cs(OFF);
 }
 
@@ -132,10 +133,9 @@ u8		can_rd_sta(void)
 	u8	ret;
 
 	spi_cs(ON);
-	spi_put8(RDSTA);
-	tmp = spi_read8();
-	spi_wait_tx();
-	ret = spi_read8();
+	spi_transfer(RDSTA);
+	tmp = spi_transfer(0x0);
+	ret = spi_transfer(0x0);
 	spi_cs(OFF);
 	if (ret == tmp)
 		return (ret);
@@ -152,10 +152,9 @@ u8		can_rx_sta(void)
 	u8	ret;
 
 	spi_cs(ON);
-	spi_put8(RXSTA);
-	tmp = spi_read8();
-	spi_wait_tx();
-	ret = spi_read8();
+	spi_transfer(RXSTA);
+	tmp = spi_transfer(0x0);
+	ret = spi_transfer(0x0);
 	spi_cs(OFF);
 	if (ret == tmp)
 		return (ret);

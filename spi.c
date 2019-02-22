@@ -1,7 +1,6 @@
 #include "types.h"
 #include "hardware.h"
 #include "samd21.h"
-//#include "uart.h"
 #include "spi.h"
 
 void	spi_flush_rx(void)
@@ -28,44 +27,19 @@ void	spi_cs(u8 status)
 	if (status == ON)
 		reg_wr(PORTB_ADDR + P_OUTCLR, 1 << 0);
 	else if (status == OFF)
-	{
-		//spi_wait_rx();
-		//spi_wait_tx();
 		reg_wr(PORTB_ADDR + P_OUTSET, 1 << 0);
-	}
 	else;
 }
 
-u8		spi_read8(void)
+u8		spi_transfer(u8 data)
 {
-	reg16_wr((SPI_ADDR + DATA), 0x0000);
+	reg16_wr((SPI_ADDR + DATA), data );
+	spi_wait_tx();
 	spi_wait_rx();
 	return(reg16_rd((SPI_ADDR + DATA)));
 }
 
-void	spi_put8(u8 hex)
-{
-	reg16_wr((SPI_ADDR + DATA), hex );
-	spi_wait_tx();
-	spi_wait_rx();
-	spi_flush_rx();
-}
-
-void	spi_put16(u16 hex)
-{
-	spi_put8((hex & 0x0000ff00) >>  8);
-	spi_put8((hex & 0x000000ff) >>  0);
-}
-
-void	spi_putx(u32 hex)
-{
-	spi_put8((hex & 0xff000000) >> 24);
-	spi_put8((hex & 0x00ff0000) >> 16);
-	spi_put8((hex & 0x0000ff00) >>  8);
-	spi_put8((hex & 0x000000ff) >>  0);
-}
-
-/*
+/**
  * @brief Initialize spi module
  * @param sercom Select which sercom to use
  */

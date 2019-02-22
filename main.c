@@ -5,6 +5,13 @@
 #include "spi.h"
 #include "mcp2515.h"
 
+void	delay(u32 ms)
+{
+	ms <<= 12;
+	for (u32 i = 0; i < ms + 1; i++)
+		asm("nop");
+}
+
 /**
  * @brief Initialize status leds
  * @section Led handling
@@ -52,39 +59,41 @@ int		main(void)
 		uart_debug("\e[33m[Warning]\e[0m failed, try to replug the module)");
 	uart_debug("can_reset");
 	//for (u16 i = 0; i < 254; ++i)
-	//	can_wr_reg(i, 0);
+	//{
+	//	if (! (i && 0x80))
+	//		can_wr_reg(i, 0);
+	//}
 	dump_memory(USABLE);
-	can_wr_reg((TXB0CTRL | CANCTRL), 0b000 << 5);  /* CAN Normal Operation mode */
-	uart_debug("(TXB0CTRL | CANCTRL), 0b000 << 5");
-	can_wr_reg(TXB0CTRL, 0b01);       /* Priority */
-	uart_debug("TXB0CTRL, 0b01");
-	dump_memory(USABLE);
+	can_wr_reg(TXB0CTRL | CANCTRL, 0);    /* CAN Normal Operation mode */
+	can_wr_reg(TXB0CTRL, 0b01);           /* Priority (min 0b00 max 0b11) */
 
-	can_tx_id(0xffff);
+	can_tx_id(0x00f0);
+	uart_debug("can_tx_id(0x0001);");
 
-	can_wr_reg(TXB0DLC, 0x2);         /* 1 in DLC (Data Length Code) */
-	uart_debug("TXB0DLC, 0x1");
-	dump_memory(USABLE);
-
-	can_wr_reg(CANINTE, 1 << 2);      /* Transmit Buffer 0 Empty Interrupt Enable bit */
-	uart_debug("CANINTE, 1 << 2");
-	dump_memory(USABLE);
-
-	can_wr_reg(TXB0D0, 0x42);
-	uart_debug("TXB0D0, 0x42");
-	dump_memory(USABLE);
-
+//	can_wr_reg(TXB0DLC, 0x1);         /* 1 in DLC (Data Length Code) */
+//	uart_debug("TXB0DLC, 0x1");
+//
+//	can_wr_reg(CANINTE, 1 << 2);      /* Transmit Buffer 0 Empty Interrupt Enable bit */
+//	uart_debug("CANINTE, 1 << 2");
+//
+//	can_wr_reg(TXB0D0, 0x42);
+//	uart_debug("TXB0D0, 0x42");
+//	uart_puthex8(can_rd_reg(TXB0D0));
+//	dump_memory(USABLE);
+//
 	can_rts(TXB0);
 	uart_debug("can_rts(TXB0);");
-	dump_memory(USABLE);
-
-	while (can_rd_reg(CANINTF) == 0)
-		;
-	uart_debug("while (can_rd_reg(CANINTF) == 0)");
+//	dump_memory(USABLE);
+//
+//	while (can_rd_reg(CANINTF) == 0)
+//		;
+//	uart_debug("while (can_rd_reg(CANINTF) == 0)");
 	dump_memory(USABLE);
 
 	while (1)
 	{
+		delay(100);
+		reg_wr(PORTB_ADDR + P_OUTTGL, 1 << 10 | 1 << 11);
 	}
 }
 /* EOF */
