@@ -6,6 +6,7 @@
 #include "uart.h"
 #include "samd21.h"
 #include "hardware.h"
+#include "delay.h"
 
 #define RESET		0xc0   /* 0b11000000 */
 #define READ		0x03   /* 0b00000011 */
@@ -163,10 +164,10 @@
 #define FULL		16
 
 int		can_reset(void);
-void	can_hw_reset(void);
+int		can_hw_reset(void);
 u8		can_rd_reg(u8 addr);
 u8		can_rd_rx(u8 buff, u8 ptr);
-void	can_wr_reg(u8 addr, u8 data);
+void	can_wr_reg(u8 addr, u8 *data, u8 len);
 void	can_ld_tx(u8 buff, u8 ptr, u8 data);
 void	can_rts(u8 tx);
 void	can_bit_mod(u8 addr, u8 mask, u8 data);

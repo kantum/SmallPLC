@@ -17,6 +17,8 @@
 #define UART_H
 
 #include "types.h"
+#include "samd21.h"
+#include "hardware.h"
 
 void	uart_crlf(void);
 void	uart_dump(u8 *d, int l);

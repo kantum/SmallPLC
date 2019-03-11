@@ -3,12 +3,18 @@
 /*
  * @brief Reset mcp2515 with pin
  */
-void	can_hw_reset(void)
+int		can_hw_reset(void)
 {
+	u8 i;
+
 	reg_wr((PORTA_ADDR + P_OUTTGL), 1 << 3);
+	delay(2); /* must be at list 2us TODO check clock */
 	reg_wr((PORTA_ADDR + P_OUTTGL), 1 << 3);
-	while (can_rd_sta() != 0)
-		;
+	delay(2);
+	//while ((can_rd_reg(0x0e) != 0x80)) /* TODO find what to check*/
+	//	if (++i == 0)				/* Try 255 times */
+	//		return (1);
+	return (0);
 }
 
 /*
@@ -18,12 +24,14 @@ void	can_hw_reset(void)
 int		can_reset(void)
 {
 	u8 i;
+
 	spi_cs(ON);
 	spi_transfer(RESET);
 	spi_cs(OFF);
-	while ((can_rd_reg(0x0e) != 0x80))
-		if (++i == 0)				/* Try 255 times */
-			return (1);
+	delay(2);
+	//while ((can_rd_reg(0x0e) != 0x80)) /* TODO find what to check*/
+	//	if (++i == 0)				/* Try 255 times */
+	//		return (1);
 	return (0);
 }
 
@@ -38,7 +46,7 @@ u8		can_rd_reg(u8 addr)
 	spi_cs(ON);
 	spi_transfer(READ);
 	spi_transfer(addr);
-	ret = spi_transfer(0x0);
+	ret = spi_transfer(0xFF);
 	spi_cs(OFF);
 	return (ret);
 }
@@ -54,7 +62,7 @@ u8		can_rd_rx(u8 buff, u8 ptr)
 
 	spi_cs(ON);
 	spi_transfer(RDRX | (buff << 2) | (ptr << 1));
-	ret = spi_transfer(0x0);
+	ret = spi_transfer(0xFF);
 	spi_cs(OFF);
 	return (ret);
 }
@@ -64,12 +72,13 @@ u8		can_rd_rx(u8 buff, u8 ptr)
  * @param addr Register address
  * @param data Data to write
  */
-void	can_wr_reg(u8 addr, u8 data)
+void	can_wr_reg(u8 addr, u8 *data, u8 len)
 {
 	spi_cs(ON);
 	spi_transfer(WRITE);
 	spi_transfer(addr);
-	spi_transfer(data);
+	for (u8 i = 0; i < len; i++)
+		spi_transfer(data[i]);
 	spi_cs(OFF);
 }
 
@@ -134,8 +143,8 @@ u8		can_rd_sta(void)
 
 	spi_cs(ON);
 	spi_transfer(RDSTA);
-	tmp = spi_transfer(0x0);
-	ret = spi_transfer(0x0);
+	tmp = spi_transfer(0xFF);
+	ret = spi_transfer(0xFF);
 	spi_cs(OFF);
 	if (ret == tmp)
 		return (ret);
@@ -153,8 +162,8 @@ u8		can_rx_sta(void)
 
 	spi_cs(ON);
 	spi_transfer(RXSTA);
-	tmp = spi_transfer(0x0);
-	ret = spi_transfer(0x0);
+	tmp = spi_transfer(0xFF);
+	ret = spi_transfer(0xFF);
 	spi_cs(OFF);
 	if (ret == tmp)
 		return (ret);

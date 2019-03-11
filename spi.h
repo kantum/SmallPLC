@@ -1,6 +1,10 @@
 #ifndef SPI_H
 #define SPI_H
 
+#include "types.h"
+#include "hardware.h"
+#include "samd21.h"
+
 #define SPI_BAUD_RATE	((8000000 >> 1) / 1000000) - 1 /* Baud rate 1Mhz */
 
 #define	ON	(u8)1

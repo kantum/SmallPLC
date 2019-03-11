@@ -13,9 +13,7 @@
  * License along with this program, see LICENSE.md file for more details.
  * This program is distributed WITHOUT ANY WARRANTY see README file.
  */
-#include "hardware.h"
 #include "uart.h"
-#include "samd21.h"
 
 static const u8 hex[16] = "0123456789ABCDEF";
 
@@ -34,7 +32,7 @@ void uart_crlf(void)
 void	clock_init(void)
 {
 	/* Set Divisor GCLK0 : enabled, OSC8M, no divisor */
-	//reg_wr(GCLK_ADDR + GCLK_GENDIV, (1 << 8) | 0x01); /* TODO 0x00 or 0x01 ?? */ Seems to be useless at list for uart
+	reg_wr(GCLK_ADDR + GCLK_GENDIV, (1 << 8) | 0x01);
 	/* Generic Clock Generator Enable */
 	reg_wr(GCLK_ADDR + GCLK_GENCTRL, (1 << 16)    /* Enable */
 			| (0x06 << 8)					      /* Source Select -> OSC8M */

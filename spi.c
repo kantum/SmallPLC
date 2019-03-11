@@ -1,6 +1,3 @@
-#include "types.h"
-#include "hardware.h"
-#include "samd21.h"
 #include "spi.h"
 
 void	spi_flush_rx(void)
@@ -33,7 +30,7 @@ void	spi_cs(u8 status)
 
 u8		spi_transfer(u8 data)
 {
-	reg16_wr((SPI_ADDR + DATA), data );
+	reg16_wr((SPI_ADDR + DATA), data);
 	spi_wait_tx();
 	spi_wait_rx();
 	return(reg16_rd((SPI_ADDR + DATA)));
