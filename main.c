@@ -53,9 +53,9 @@ void	can_init()
 	}
 	uart_debug(C_GREEN"can_reset\r\n"C_END);
 	//clear_can_registers();
-	//can_wr_reg(CNF1, "\x06", 1);               /* Set Baud Rate Prescaler bit */
-	//can_wr_reg(RXB0CTRL, "\x60", 1);   /* Receive any message, no filter/mask */
-	//can_wr_reg(RXB1CTRL, "\x60", 1);   /* Receive any message, no filter/mask */
+	can_wr_reg(CNF1, "\x06", 1);               /* Set Baud Rate Prescaler bit */
+	can_wr_reg(RXB0CTRL, "\x60", 1);   /* Receive any message, no filter/mask */
+	can_wr_reg(RXB1CTRL, "\x60", 1);   /* Receive any message, no filter/mask */
 	can_bit_mod(CANINTE, 0b11, 0b11);    /* RX0 and RX1 Interrupt Enable bits */
 	can_wr_reg(TXB0CTRL | CANCTRL, "\x0", 1);    /* CAN Normal Operation mode */
 }
@@ -107,12 +107,15 @@ u8		*can_receive(u8 *buffer)
 	t_can_msg	receive;
 
 	i = 0;
-	can_wr_reg(CANINTF, "\x0",1);
 	dump_memory(USABLE);
-	can_get_error();
-	while ((can_rd_reg(CANINTF) & 0x3 ) == 0)
-		;
-	uart_puts("\r\n One day maybe.....");
+	//can_get_error();
+	while ((can_rd_reg(CANINTF) /*& 0x3*/ ) == 0)
+	{
+		if (++i < 80)
+			break;
+		uart_puts(".");
+	}
+	i = 0;
 
 	uart_puts("\r\n  RX0 EID: ");
 	can_rx_id(&receive);
@@ -188,12 +191,12 @@ int		main(void)
 
 	uart_puts("send\r\n");
 	can_send(colis);
-	can_get_error();
 	can_receive(tmp);
 	uart_puts("receive\r\n");
 
 	while (1)
 	{
+		uart_puts("while ");
 		reg_wr(PORTB_ADDR + P_OUTTGL, 1 << 10 | 1 << 11);
 		delay(100);
 	}
