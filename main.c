@@ -53,9 +53,18 @@ void	can_init()
 	}
 	uart_debug(C_GREEN"can_reset\r\n"C_END);
 	//clear_can_registers();
-	can_wr_reg(CNF1, "\x06", 1);               /* Set Baud Rate Prescaler bit */
-	can_wr_reg(RXB0CTRL, "\x60", 1);   /* Receive any message, no filter/mask */
-	can_wr_reg(RXB1CTRL, "\x60", 1);   /* Receive any message, no filter/mask */
+	/* Set Baud Rate Prescaler bit TODO make a function out of this */
+	can_wr_reg(CNF1, "\x03", 1);           /* BRP */
+	                                       /* Tq = 2 x (BRP + 1)/Fosc */
+	                                       /* Tq = 8/8000000 = 0.000001 = 1us */
+	can_wr_reg(CNF2, "\x91", 1);           /* BTL mode to determined by PHSEG2*/
+	                                       /* PHSEG  = 1 (PHSEG + 1) x Tq */
+	                                       /* PRSEG  = 1 (PRSEG + 1) x Tq */
+	can_wr_reg(CNF3, "\x03", 1);           /* PHSEG2 = 3 (PHSEG2 + 1) x Tq */
+	                                       /* Minimum valid setting 2 TqS. */
+	can_wr_reg(RXB0CTRL, "\x0", 1);   /* Receive any message, no filter/mask */
+	can_wr_reg(RXB1CTRL, "\x0", 1);   /* Do not Receive any message, no filter/mask */
+	can_wr_reg(CANINTF, "\x0", 1);                    /* Clear Interrupt Flags*/
 	can_bit_mod(CANINTE, 0b11, 0b11);    /* RX0 and RX1 Interrupt Enable bits */
 	can_wr_reg(TXB0CTRL | CANCTRL, "\x0", 1);    /* CAN Normal Operation mode */
 }
@@ -107,16 +116,19 @@ u8		*can_receive(u8 *buffer)
 	t_can_msg	receive;
 
 	i = 0;
-	dump_memory(USABLE);
-	//can_get_error();
-	while ((can_rd_reg(CANINTF) /*& 0x3*/ ) == 0)
+	//dump_memory(USABLE);
+	can_get_error();
+	while ((can_rd_reg(CANINTF) & 0x3 ) == 0)
 	{
-		if (++i < 80)
-			break;
 		uart_puts(".");
+		if (++i > 1000)
+		{
+			uart_crlf();
+			return(NULL);
+		}
 	}
-	i = 0;
 
+	i = 0;
 	uart_puts("\r\n  RX0 EID: ");
 	can_rx_id(&receive);
 	uart_puthex16(receive.id);
@@ -125,7 +137,7 @@ u8		*can_receive(u8 *buffer)
 	uart_puthex8(can_rd_reg(RXB0EID8));
 	uart_puts("\r\n4 RX0 RXB0EID0: ");
 	uart_puthex8(can_rd_reg(RXB0EID0));
-	uart_puts("\r\n5 RX0 RXB0DLC: ");
+	uart_puts("\r\n5 RX0  RXB0DLC: ");
 	uart_puthex8(can_rd_reg(RXB0DLC));
 
 	uart_crlf();
@@ -134,37 +146,12 @@ u8		*can_receive(u8 *buffer)
 	while (buffer[i] = can_rd_reg(RXB0D0 + i))
 	{
 		uart_puthex8(i);
-		uart_puts("\t");
+		uart_puts("    ");
 		uart_puthex8(buffer[i]);
-		uart_puts("\t");
-		uart_putc(buffer[i]);
 		uart_crlf();
 		i++;
 	}
 
-	uart_puts("\r\n  RX1 EID: ");
-	uart_puthex16(((u16)can_rd_reg(RXB1SIDH) << 3) | ((u16)(can_rd_reg(RXB1SIDL) & 0xe0) >> 5));
-	uart_puts("\r\n3 RX1 RXB1EID8: ");
-	uart_puthex8(can_rd_reg(RXB1EID8));
-	uart_puts("\r\n4 RX1 RXB1EID0: ");
-	uart_puthex8(can_rd_reg(RXB1EID0));
-	uart_puts("\r\n5 RX1 RXB1DLC: ");
-	uart_puthex8(can_rd_reg(RXB1DLC));
-
-	uart_crlf();
-	uart_crlf();
-	uart_puts("RX1 buffer\r\n");
-	i = 0;
-	while (buffer[i] = can_rd_reg(RXB1D0 + i))
-	{
-		uart_puthex8(i);
-		uart_puts("\t");
-		uart_puthex8(buffer[i]);
-		uart_puts("\t");
-		uart_putc(buffer[i]);
-		uart_crlf();
-		i++;
-	}
 	return (buffer);
 }
 
@@ -182,21 +169,22 @@ int		main(void)
 	spi_init(5);                                      /* SPI  init on sercom5 */
 	can_init();
 
-	colis.id		= 0x21F;
+	colis.id		= 0x50F;
 	colis.prio		= 0b11;
 	colis.rtr		= 0;
-	colis.length	= 1;
+	colis.length	= 7;
 	for (u8 i = 0; i < colis.length; i++)
 		colis.data[i] 	= 0x42;
 
 	uart_puts("send\r\n");
+	dump_memory(USABLE);
 	can_send(colis);
 	can_receive(tmp);
-	uart_puts("receive\r\n");
+	uart_puts("done\r\n");
 
 	while (1)
 	{
-		uart_puts("while ");
+		uart_puts(".");
 		reg_wr(PORTB_ADDR + P_OUTTGL, 1 << 10 | 1 << 11);
 		delay(100);
 	}
