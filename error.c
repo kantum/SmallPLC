@@ -1,8 +1,5 @@
 #include "error.h"
 
-#define TEC	0x1C
-#define REC	0x1D
-
 void	can_print_status()
 {
 	u8	status;

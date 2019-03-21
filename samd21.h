@@ -1,6 +1,9 @@
 #ifndef SAMD21_H
 # define SAMD21_H
 
+#include "types.h"
+#include "hardware.h"
+
 #define PM_ADDR				((u32)0x40000400)
 #define SYSCTRL_ADDR		((u32)0x40000800)
 #define PORTA_ADDR			((u32)0x41004400)

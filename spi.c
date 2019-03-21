@@ -1,10 +1,8 @@
 #include "spi.h"
 
-void	spi_flush_rx(void)
-{
-	reg16_rd((SPI_ADDR + DATA));
-}
-
+/**
+ * @brief Wait for receive to clomplete
+ */
 void	spi_wait_rx(void)
 {
 	/* Read INTFLAG and wait RXC (Receive Complete) */
@@ -12,6 +10,9 @@ void	spi_wait_rx(void)
 		;
 }
 
+/**
+ * @brief Wait for transmit to clomplete
+ */
 void	spi_wait_tx(void)
 {
 	/* Read INTFLAG and wait TXC (Transmit Complete) */
@@ -19,6 +20,10 @@ void	spi_wait_tx(void)
 		;
 }
 
+/**
+ * @brief SPI chip select switch
+ * @param status ON (chip select low) or OFF (chip select high)
+ */
 void	spi_cs(u8 status)
 {
 	if (status == ON)
@@ -28,6 +33,10 @@ void	spi_cs(u8 status)
 	else;
 }
 
+/**
+ * @brief Send data octet while returning SPI data
+ * @param data Octet to send
+ */
 u8		spi_transfer(u8 data)
 {
 	reg16_wr((SPI_ADDR + DATA), data);

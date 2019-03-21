@@ -44,16 +44,6 @@ void	show_can_msg(t_can_msg *msg)
 	uart_crlf();
 }
 
-void can_set_msg(t_can_msg *msg, u16 id, u8 prio, u8 rtr, u8 len, u8 *data)
-{
-	msg->id     = id   & 0x7FF;
-	msg->prio   = prio & 0x3;
-	msg->rtr    = rtr  & 0x1;
-	msg->len	= len;
-	for (u8 i = 0; i < msg->len; i++)
-		msg->data[i] = data[i];
-}
-
 /**
  * @brief Don't you know main function ? Very handy one...
  */

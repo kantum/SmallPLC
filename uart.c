@@ -15,6 +15,8 @@
  */
 #include "uart.h"
 
+//TODO Clean this file
+
 static const u8 hex[16] = "0123456789ABCDEF";
 
 /**
