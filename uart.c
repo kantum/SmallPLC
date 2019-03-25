@@ -93,33 +93,6 @@ void	uart_init(u8 sercom)
 	reg_set(UART_ADDR, 0x02);
 }
 
-//void uart_init(u8 sercom)
-//{
-//	/* 1) Enable peripheral and set clocks */
-//
-//	/* Enable SERCOM3 clock (APBCMASK) */
-//	reg_set(PM_ADDR + 0x20, (1 << 5));
-//	/* Set GCLK for SERCOM3 (generic clock generator 1) */
-//	reg16_wr(GCLK_ADDR + 0x02, (1 << 14) | (1 << 8) | 23);
-//
-//	/* 2) Initialize UART block   */
-//
-//	/* Reset UART (set SWRST)     */
-//	reg_wr((UART_ADDR + 0x00), 0x01);
-//	/* Wait end of software reset */
-//	while( reg_rd(UART_ADDR + 0x00) & 0x01)
-//		;
-//
-//	/* Configure UART */
-//	reg_wr(UART_ADDR + 0x00, 0x40100004);
-//	reg_wr(UART_ADDR + 0x04, 0x00030000);
-//	/* Configure Baudrate */
-//	reg_wr(UART_ADDR + 0x0C, CONF_BAUD_RATE);
-//
-//	/* Set ENABLE into CTRLA */
-//	reg_set( (UART_ADDR + 0x00), (1 << 1) );
-//}
-
 /**
  * @brief Send a single byte over UART
  *

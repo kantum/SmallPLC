@@ -38,17 +38,19 @@ int		can_reset(void)
 /*
  * @brief Read arbitrary register
  * @param addr Register address to read
+ * @param data Buffer where to write data
+ * @param len length of the reading
  */
-u8		can_rd_reg(u8 addr)
+void	can_rd_reg(u8 addr, u8 *data, u8 len)
 {
 	u8 ret;
 
 	spi_cs(ON);
 	spi_transfer(READ);
 	spi_transfer(addr);
-	ret = spi_transfer(0xFF);
+	for (u32 i = 0; i < len; i++)
+		data[i] = spi_transfer(0xFF);
 	spi_cs(OFF);
-	return (ret);
 }
 
 /*
@@ -198,7 +200,7 @@ void	dump_memory(u8 size)
 		uart_putc(' ');
 		for (u8 j = 0; j < size; )
 		{
-			can = can_rd_reg(i);
+			can_rd_reg(i, &can, 1);
 			if (can != 0)
 			{
 				uart_puts("\e[33m"); 

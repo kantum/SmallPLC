@@ -73,7 +73,7 @@ void	can_send(t_can_msg *msg)
 {
 	can_tx_id(msg->id);                                    /* ID Can          */
 	can_bit_mod(TXB0CTRL, 0x3, (msg->prio & 0x3));         /* Priority Bits   */
-	can_bit_mod(TXB0CTRL | CANCTRL, 1 << 3, 1 << 3);       /* One Shoot Mode  */
+	//can_bit_mod(TXB0CTRL | CANCTRL, 1 << 3, 1 << 3);       /* One Shoot Mode  */
 	can_rtr_dlc(msg);                                      /* RTR And DLC     */
 	can_wr_reg(TXB0D0, msg->data, msg->len);               /* Send Data       */
 	can_rts(TXB0);                                         /* Request To Send */
@@ -83,19 +83,17 @@ void	can_send(t_can_msg *msg)
  * @brief Parse RXB0SIDH and RXB0SIDL to extract the received CAN identifier
  * @param msg A pointer to the CAN structure received
  */
-void	can_rx_id(t_can_msg *msg)
+void	can_rx_id(t_can_msg *msg, u8 *buf)
 {
-	u16	tmp;
+	msg->id = buf[RXB0SIDH & 0xF] << 3 | (buf[RXB0SIDL & 0xF] & 0xE0) >> 5;
 
-	msg->id = (u16)can_rd_reg(RXB0SIDH) << 3
-		| (can_rd_reg(RXB0SIDL) & 0xE0) >> 5;
-	if ((tmp = can_rd_reg(RXB0SIDL) & (1 << 3)) != 0)    /* Check If Extended */
+	if ((buf[RXB0SIDL & 0xF] & (1 << 3)) != 0)           /* Check If Extended */
 	{
 		msg->ide = 1;
-		if (tmp & (1 << 4))                              /* Check the SRR */
+		if (buf[RXB0SIDL & 0xF] & (1 << 4))                  /* Check the SRR */
 			msg->srr = 1; 
 		msg->id <<= 16;
-		msg->id |= (can_rd_reg(RXB0EID8) << 8) | (can_rd_reg(RXB0EID0));
+		msg->id |= (buf[RXB0EID8 & 0xF]) << 8 | buf[RXB0EID0 & 0xF];
 	}
 }
 
@@ -103,9 +101,9 @@ void	can_rx_id(t_can_msg *msg)
  * @brief Parse received DLC
  * @param msg A pointer to the CAN structure received
  */
-void	can_rx_len(t_can_msg *msg)
+void	can_rx_len(t_can_msg *msg, u8 *buf)
 {
-	msg->len = can_rd_reg(RXB0DLC) & 0xF;
+	msg->len = buf[RXB0DLC & 0xF] & 0xF;
 }
 
 /**
@@ -134,22 +132,27 @@ void	can_set_msg(t_can_msg *msg, u16 id, u8 prio, u8 rtr, u8 len, u8 *data)
 void	can_receive(t_can_msg *msg)
 {
 	u32	i;
+	u8	tmp;
+	u8	buffer[0xf];
 
 	i = -1;
-	while ((can_rd_reg(CANINTF) & 0x3 ) == 0)
+	tmp = 0;
+	while (tmp & 0x1 == 0)
 	{
+		can_rd_reg(CANINTF, &tmp, 1);
 		if (++i > 1000)
 		{
 			uart_debug(C_YELLOW"[Warning]"C_END "can_receive time out");
+			i = 0;
 			return;
 		}
 	}
-	can_rx_id(msg);
-	can_rx_len(msg);
+	can_rd_reg(RXB0CTRL, buffer, 0xf);
+	can_rx_id(msg, buffer);
+	can_rx_len(msg, buffer);
 	i = -1;
 	while (++i < 8)
-	{
-		msg->data[i] = can_rd_reg(RXB0D0 + i);
-	}
+		msg->data[i] = buffer[(RXB0D0 & 0xF) + i];
+	can_bit_mod(CANINTF, 0x1, 0x0);               /* RX0 Interrupt Flag Clean */
 }
 /* EOF */
