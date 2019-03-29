@@ -31,9 +31,11 @@ void	can_init()
 	uart_debug("\r\n"C_GREEN"can_reset\r\n"C_END);
 	can_baud_rate();                             /* Baud Rate Configuration   */
 	can_wr_reg(RXB0CTRL, "\x1", 1);              /* Receive Any Message       */
+	can_wr_reg(RXB1CTRL, "\x1", 1);              /* Receive Any Message       */
 	can_wr_reg(CANINTF, "\x0", 1);               /* Clear Interrupt Flags     */
-	can_bit_mod(CANINTE, 0x1, 0x1);              /* RX0 Interrupt Enable Bits */
 	can_wr_reg(TXB0CTRL | CANCTRL, "\x0", 1);    /* CAN Normal Operation Mode */
+	can_bit_mod(CANINTE, 0x1, 0x1);              /* RX0 Interrupt Enable Bits */
+	can_wr_reg(CANINTE, "\x1", 1);
 }
 
 /**
@@ -77,6 +79,7 @@ void	can_send(t_can_msg *msg)
 	can_rtr_dlc(msg);                                      /* RTR And DLC     */
 	can_wr_reg(TXB0D0, msg->data, msg->len);               /* Send Data       */
 	can_rts(TXB0);                                         /* Request To Send */
+	can_bit_mod(CANINTF, 0x4, 0x0);                        /* Clean flag      */
 }
 
 /**
@@ -143,19 +146,29 @@ void	can_receive(t_can_msg *msg)
 		if (++i > 1000)
 		{
 			uart_debug(C_YELLOW"[Warning]"C_END "can_receive time out");
+			uart_puthex8(tmp);
 			i = 0;
 			return;
 		}
 	}
-	while ((tmp & 0x1) == 0);
+	while (!(tmp & 0x3));
+	if (tmp & 0x2)
+		uart_debug("RX1");
+	else
+		uart_debug("RX0");
 	can_rd_reg(RXB0CTRL, buffer, 0xf);
 	can_rx_id(msg, buffer);
 	can_rx_len(msg, buffer);
 	i = -1;
 	while (++i < 8)
-	{
 		msg->data[i] = buffer[(RXB0D0 & 0xF) + i];
-	}
-	can_bit_mod(CANINTF, 0x1, 0x0);               /* RX0 Interrupt Flag Clean */
+	can_bit_mod(CANINTF, 0x1, 0x0);               /* RX1 Interrupt Flag Clean */
+	can_rd_reg(RXB1CTRL, buffer, 0xf);
+	can_rx_id(msg, buffer);
+	can_rx_len(msg, buffer);
+	i = -1;
+	while (++i < 8)
+		msg->data[i] = buffer[(RXB0D0 & 0xF) + i];
+	can_bit_mod(CANINTF, 0x2, 0x0);               /* RX1 Interrupt Flag Clean */
 }
 /* EOF */

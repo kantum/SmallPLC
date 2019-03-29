@@ -29,17 +29,21 @@ void	can_print_status()
 
 void can_print_tec()
 {
+	u8 tmp;
 	/* Transmit Error Counter */
 	uart_puts("Transmit Error Counter : ");
-	uart_puthex8(can_rd_reg(TEC));
+	can_rd_reg(TEC, &tmp, 1);
+	uart_puthex8(tmp);
 	uart_crlf();
 }
 
 void can_print_rec()
 {
+	u8 tmp;
 	/* Receive  Error Counter */
 	uart_puts("Receive  Error Counter : ");
-	uart_puthex8(can_rd_reg(REC));
+	can_rd_reg(REC, &tmp, 1);
+	uart_puthex8(tmp);
 	uart_crlf();
 }
 
@@ -55,7 +59,7 @@ void	can_print_eflg()
 {
 	u8	eflg;
 
-	eflg = can_rd_reg(EFLG);
+	can_rd_reg(EFLG, &eflg, 1);
 	uart_puts("EFLG : ");
 	uart_puthex8(eflg);
 	uart_crlf();

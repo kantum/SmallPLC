@@ -4,6 +4,7 @@
 #include "types.h"
 #include "mcp2515.h"
 #include "color.h"
+#include "error.h"
 
 #define CLK		8000000                         /* Clock Frequency            */
 #define TQ		0.000001                        /* Time Quantum               */

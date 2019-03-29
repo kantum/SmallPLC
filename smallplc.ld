@@ -125,11 +125,9 @@ SECTIONS
     {
         . = ALIGN(8);
         _sstack = .;
-        . = . + STACK_SIZE;
-        . = ALIGN(8);
         _estack = .;
     } > ram
 
     . = ALIGN(4);
     _end = . ;
-}
+} 

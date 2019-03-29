@@ -79,6 +79,19 @@
 #define FIFOSPACE			0x34
 #define FIFOPTR				0x36
 
+/* External Interrupt Controller */
+#define EIC_CTRL		0x00
+#define EIC_STATUS		0x01
+#define EIC_NMICTRL		0x02
+#define EIC_NMIFLAG		0x03
+#define EIC_EVCTRL		0x04
+#define EIC_INTENCLR	0x08
+#define EIC_INTENSET	0x0C
+#define EIC_INTFLAG		0x10
+#define EIC_WAKEUP		0x14
+#define EIC_CONFIG		0x18
+
 void	sercom_init(u8 n, u8 clk);
+void	interrupt_init(u8 clk);
 
 #endif

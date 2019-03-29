@@ -18,15 +18,16 @@
 #include "types.h"
 
 /* AHB-APB Bridge A */
-#define PAC0_ADDR    ((u32)0x40000000)
-#define PM_ADDR      ((u32)0x40000400)
-#define SYSCTRL_ADDR ((u32)0x40000800)
-#define GCLK_ADDR    ((u32)0x40000C00)
+#define PAC0_ADDR		((u32)0x40000000)
+#define PM_ADDR			((u32)0x40000400)
+#define SYSCTRL_ADDR	((u32)0x40000800)
+#define GCLK_ADDR		((u32)0x40000C00)
+#define EIC_ADDR		((u32)0x40001800)
 /* AHB-APB Bridge B */
-#define NVM_ADDR     ((u32)0x41004000)
-#define USB_ADDR     ((u32)0x41005000)
+#define NVM_ADDR		((u32)0x41004000)
+#define USB_ADDR		((u32)0x41005000)
 /* Bridge C */
-#define TCC0_ADDR    ((u32)0x42002000)
+#define TCC0_ADDR		((u32)0x42002000)
 
 void hw_init(void);
 int  button_status(void);
@@ -108,5 +109,17 @@ static inline void reg_set(u32 reg, u32 value)
 {
   *(volatile u32 *)reg = (*(volatile u32 *)reg | value);
 }
+
+/**
+ * @brief Set some bits into a 8bits memory mapped register
+ *
+ * @param reg   Address of the register to update
+ * @param value Mask of bits to set into the register
+ */
+static inline void reg8_set(u32 reg, u8 value)
+{
+	*(volatile u8 *)reg = (*(volatile u8 *)reg | value);
+}
+
 
 #endif
