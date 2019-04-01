@@ -88,15 +88,15 @@ void	can_send(t_can_msg *msg)
  */
 void	can_rx_id(t_can_msg *msg, u8 *buf)
 {
-	msg->id = buf[RXB0SIDH & 0xF] << 3 | (buf[RXB0SIDL & 0xF] & 0xE0) >> 5;
+	msg->id = buf[0] << 3 | (buf[1] & 0xE0) >> 5;
 
-	if ((buf[RXB0SIDL & 0xF] & (1 << 3)) != 0)           /* Check If Extended */
+	if ((buf[1] & (1 << 3)) != 0)           /* Check If Extended */
 	{
 		msg->ide = 1;
-		if (buf[RXB0SIDL & 0xF] & (1 << 4))                  /* Check the SRR */
+		if (buf[1] & (1 << 4))                  /* Check the SRR */
 			msg->srr = 1; 
 		msg->id <<= 16;
-		msg->id |= (buf[RXB0EID8 & 0xF]) << 8 | buf[RXB0EID0 & 0xF];
+		msg->id |= (buf[3]) << 8 | buf[4];
 	}
 }
 
@@ -106,7 +106,7 @@ void	can_rx_id(t_can_msg *msg, u8 *buf)
  */
 void	can_rx_len(t_can_msg *msg, u8 *buf)
 {
-	msg->len = buf[RXB0DLC & 0xF] & 0xF;
+	msg->len = buf[4] & 0xF;
 }
 
 /**
@@ -130,9 +130,10 @@ void	can_set_msg(t_can_msg *msg, u16 id, u8 prio, u8 rtr, u8 len, u8 *data)
 
 /**
  * @brief Wait for a CAN message to be received
- * @param msg A pointer to the CAN structure
+ * @param msg  A pointer to the CAN structure
+ * @param buff Buffer register to read BUFF0 BUFF1
  */
-void	can_receive(t_can_msg *msg)
+void	can_receive(t_can_msg *msg, u8 buff)
 {
 	u32	i;
 	u8	tmp;
@@ -140,35 +141,11 @@ void	can_receive(t_can_msg *msg)
 
 	i = -1;
 	tmp = 0;
-	do
-	{
-		can_rd_reg(CANINTF, &tmp, 1);
-		if (++i > 1000)
-		{
-			uart_debug(C_YELLOW"[Warning]"C_END "can_receive time out");
-			uart_puthex8(tmp);
-			i = 0;
-			return;
-		}
-	}
-	while (!(tmp & 0x3));
-	if (tmp & 0x2)
-		uart_debug("RX1");
-	else
-		uart_debug("RX0");
-	can_rd_reg(RXB0CTRL, buffer, 0xf);
+	can_rd_rx(buff, buffer, RXBnSIDH, 0xD);
 	can_rx_id(msg, buffer);
 	can_rx_len(msg, buffer);
 	i = -1;
 	while (++i < 8)
-		msg->data[i] = buffer[(RXB0D0 & 0xF) + i];
-	can_bit_mod(CANINTF, 0x1, 0x0);               /* RX1 Interrupt Flag Clean */
-	can_rd_reg(RXB1CTRL, buffer, 0xf);
-	can_rx_id(msg, buffer);
-	can_rx_len(msg, buffer);
-	i = -1;
-	while (++i < 8)
-		msg->data[i] = buffer[(RXB0D0 & 0xF) + i];
-	can_bit_mod(CANINTF, 0x2, 0x0);               /* RX1 Interrupt Flag Clean */
+		msg->data[i] = buffer[5 + i];
 }
 /* EOF */

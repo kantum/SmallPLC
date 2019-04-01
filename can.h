@@ -24,16 +24,16 @@
 /**
  * @brief CAN data structure
  */
-typedef struct	s_can_msg
+typedef struct				s_can_msg 
 {
-	u32	id;                            /* Can Identifier              11 bits */
-	u8	ide;                           /* Extended Identifier          1 bit  */
-	u8	prio;                          /* Can Priority                 2 bits */
-	u8	rtr;                           /* Remote Transmission Request  1 bit  */
-	u8	srr;                           /* Substitute Remote  Request   1 bit  */
-	u8	len;			               /* Can Data                     8 bits */
+	u32	id;                            /* Can Identifier           11/29 bits */
 	u8	data[8];
-}				t_can_msg;
+	u8	len;			               /* Can Data                     8 bits */
+	u8	prio:2;                        /* Can Priority                 2 bits */
+	u8	ide:1;                         /* Extended Identifier          1 bit  */
+	u8	rtr:1;                         /* Remote Transmission Request  1 bit  */
+	u8	srr:1;                         /* Substitute Remote  Request   1 bit  */
+} __attribute__ ((packed))	t_can_msg;
 
 void	can_init();
 void	can_tx_id(u32 id);
@@ -41,7 +41,7 @@ void	can_baud_rate();
 void	can_rtr_dlc(t_can_msg *msg);
 void	can_send(t_can_msg *msg);
 void	can_rx_id(t_can_msg *msg, u8 *buf);
-void	can_receive(t_can_msg *msg);
+void	can_receive(t_can_msg *msg, u8 buff);
 void	can_set_msg(t_can_msg *msg, u16 id, u8 prio, u8 rtr, u8 len, u8 *data);
 
 #endif

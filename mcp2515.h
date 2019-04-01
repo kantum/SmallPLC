@@ -166,7 +166,7 @@
 int		can_reset(void);
 int		can_hw_reset(void);
 void	can_rd_reg(u8 addr, u8 *data, u8 len);
-u8		can_rd_rx(u8 buff, u8 ptr);
+void	can_rd_rx(u8 buff, u8 *data, u8 ptr, u8 len);
 void	can_wr_reg(u8 addr, u8 *data, u8 len);
 void	can_ld_tx(u8 buff, u8 ptr, u8 data);
 void	can_rts(u8 tx);

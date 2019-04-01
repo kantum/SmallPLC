@@ -56,17 +56,16 @@ void	can_rd_reg(u8 addr, u8 *data, u8 len)
 /*
  * @brief Read RX buffer
  * @param buff BUFF0 or BUFF1
- * @param ptr RXBnSIDH or RXBnD0
+ * @param data Data to write
+ * @param off  The offset where to start reading RXBnSIDH or RXBnD0
  */
-u8		can_rd_rx(u8 buff, u8 ptr)
+void	can_rd_rx(u8 buff, u8 *data, u8 ptr, u8 len)
 {
-	u8	ret;
-
 	spi_cs(ON);
 	spi_transfer(RDRX | (buff << 2) | (ptr << 1));
-	ret = spi_transfer(0xFF);
+	for (u8 i = 0; i < len; i++)
+		data[i] = spi_transfer(0xFF);
 	spi_cs(OFF);
-	return (ret);
 }
 
 /*

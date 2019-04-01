@@ -5,7 +5,7 @@
 #include "hardware.h"
 #include "samd21.h"
 
-#define SPI_BAUD_RATE	((8000000 >> 1) / 1000000) - 1      /* Baud rate 1Mhz */
+#define SPI_BAUD_RATE	((8000000 >> 1) / 2000000) - 1      /* Baud rate 2Mhz */
 
 #define	ON	(u8)1
 #define	OFF	(u8)0
