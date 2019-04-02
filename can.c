@@ -1,5 +1,6 @@
 #include "can.h"
 
+extern u8 caninte;
 /**
  * @brief MCP2515 Configuration register filling with baud rate values
  */
@@ -34,8 +35,8 @@ void	can_init()
 	can_wr_reg(RXB1CTRL, "\x1", 1);              /* Receive Any Message       */
 	can_wr_reg(CANINTF, "\x0", 1);               /* Clear Interrupt Flags     */
 	can_wr_reg(TXB0CTRL | CANCTRL, "\x0", 1);    /* CAN Normal Operation Mode */
-	can_bit_mod(CANINTE, 0x1, 0x1);              /* RX0 Interrupt Enable Bits */
-	can_wr_reg(CANINTE, "\x1", 1);
+	caninte = 0x1;
+	can_wr_reg(CANINTE, &caninte, 1);            /* RX0 Interrupt Enable Bits */
 }
 
 /**
