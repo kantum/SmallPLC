@@ -8,8 +8,6 @@
 #define SYSCTRL_ADDR		((u32)0x40000800)
 #define PORTA_ADDR			((u32)0x41004400)
 #define PORTB_ADDR			((u32)0x41004480)
-#define PORTB				((u32)0x41004480)
-//# define GCLK_ADDR			((u32)0x30000c00)
 #define UART_ADDR			((u32)0x42000800)
 #define SPI_ADDR			((u32)0x42001c00)
 
@@ -64,32 +62,47 @@
 #define	GCLK_GENCTRL		0x04
 #define	GCLK_GENDIV			0x08
 
-/* SERCOM USART SPI */
-#define CTRLA				0x00
-#define CTRLB				0x04
-#define BAUD				0x0c
-#define RXPL				0x0e
-#define INTENCLR			0x14
-#define INTENSET			0x16
-#define INTFLAG				0x18
-#define STATUS				0x1A
-#define SYNCBUSY			0x1c
-#define DATA				0x28
-#define DBGCTRL				0x30
-#define FIFOSPACE			0x34
-#define FIFOPTR				0x36
+/* SERCOM USART */
+#define USART_CTRLA			0x00
+#define USART_CTRLB			0x04
+#define USART_BAUD			0x0c
+#define USART_RXPL			0x0e
+#define USART_INTENCLR		0x14
+#define USART_INTENSET		0x16
+#define USART_INTFLAG		0x18
+#define USART_STATUS		0x1A
+#define USART_SYNCBUSY		0x1c
+#define USART_DATA			0x28
+#define USART_DBGCTRL		0x30
+#define USART_FIFOSPACE		0x34
+#define USART_FIFOPTR		0x36
+
+/* SERCOM SPI */
+#define SPI_CTRLA			0x00
+#define SPI_CTRLB			0x04
+#define SPI_BAUD			0x0c
+#define SPI_RXPL			0x0e
+#define SPI_INTENCLR		0x14
+#define SPI_INTENSET		0x16
+#define SPI_INTFLAG			0x18
+#define SPI_STATUS			0x1A
+#define SPI_SYNCBUSY		0x1c
+#define SPI_DATA			0x28
+#define SPI_DBGCTRL			0x30
+#define SPI_FIFOSPACE		0x34
+#define SPI_FIFOPTR			0x36
 
 /* External Interrupt Controller */
-#define EIC_CTRL		0x00
-#define EIC_STATUS		0x01
-#define EIC_NMICTRL		0x02
-#define EIC_NMIFLAG		0x03
-#define EIC_EVCTRL		0x04
-#define EIC_INTENCLR	0x08
-#define EIC_INTENSET	0x0C
-#define EIC_INTFLAG		0x10
-#define EIC_WAKEUP		0x14
-#define EIC_CONFIG		0x18
+#define EIC_CTRL			0x00
+#define EIC_STATUS			0x01
+#define EIC_NMICTRL			0x02
+#define EIC_NMIFLAG			0x03
+#define EIC_EVCTRL			0x04
+#define EIC_INTENCLR		0x08
+#define EIC_INTENSET		0x0C
+#define EIC_INTFLAG			0x10
+#define EIC_WAKEUP			0x14
+#define EIC_CONFIG			0x18
 
 void	sercom_init(u8 n, u8 clk);
 void	interrupt_init(u8 clk);

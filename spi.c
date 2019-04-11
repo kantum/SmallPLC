@@ -6,7 +6,7 @@
 void	spi_wait_rx(void)
 {
 	/* Read INTFLAG and wait RXC (Receive Complete) */
-	while ((reg_rd(SPI_ADDR + INTFLAG) & 1 << 2) == 0)
+	while ((reg_rd(SPI_ADDR + SPI_INTFLAG) & 1 << 2) == 0)
 		;
 }
 
@@ -16,7 +16,7 @@ void	spi_wait_rx(void)
 void	spi_wait_tx(void)
 {
 	/* Read INTFLAG and wait TXC (Transmit Complete) */
-	while ((reg_rd(SPI_ADDR + INTFLAG) & 1 << 1) == 0)
+	while ((reg_rd(SPI_ADDR + SPI_INTFLAG) & 1 << 1) == 0)
 		;
 }
 
@@ -39,10 +39,10 @@ void	spi_cs(u8 status)
  */
 u8		spi_transfer(u8 data)
 {
-	reg16_wr((SPI_ADDR + DATA), data);
+	reg16_wr((SPI_ADDR + SPI_DATA), data);
 	spi_wait_tx();
 	spi_wait_rx();
-	return(reg16_rd((SPI_ADDR + DATA)));
+	return(reg16_rd((SPI_ADDR + SPI_DATA)));
 }
 
 /**
@@ -67,21 +67,21 @@ void	spi_init(u8 sercom)
 	reg8_wr((PORTB_ADDR + P_PMUX + 1), (0x03)                         /* PB02 */
 			|  (0x03 << 4)); /* PB03 */
 	sercom_init(sercom, 1);                              /* Initialize sercom */
-	reg_wr((SPI_ADDR + CTRLA), 0x01);                    /* Reset SPI         */
-	while(reg_rd(SPI_ADDR + SYNCBUSY) & 0x01)            /* Wait end of Reset */
+	reg_wr((SPI_ADDR + SPI_CTRLA), 0x01);                /* Reset SPI         */
+	while(reg_rd(SPI_ADDR + SPI_SYNCBUSY) & 0x01)        /* Wait end of Reset */
 		;
-	reg_wr(SPI_ADDR + CTRLA, (0x1 << 20) | (0x3 << 16) | (0x3 << 2));          
+	reg_wr(SPI_ADDR + SPI_CTRLA, (0x1 << 20) | (0x3 << 16) | (0x3 << 2));          
 	/*                            /             /            /     */
 	/* DIPO PAD[1] PB03 ---------/             /            /      */
 	/* DOPO DO PAD[0] PB02 -------------------/            /       */
 	/* DOPO SCK PAD[3] PB01 -----------------/            /        */
 	/* DOPO SS PAD[1] PB03 -----------------/            /         */
 	/* Mode SPI master ---------------------------------/          */
-	reg_wr(SPI_ADDR + CTRLB, (1 << 17));                    /* RXEN Enable RX */	
-	while(reg_rd((SPI_ADDR + SYNCBUSY)) & (1 << 2))         /* Wait for CTRLB */
+	reg_wr(SPI_ADDR + SPI_CTRLB, (1 << 17));                /* RXEN Enable RX */	
+	while(reg_rd((SPI_ADDR + SPI_SYNCBUSY)) & (1 << 2))     /* Wait for CTRLB */
 		;
-	reg16_wr(SPI_ADDR + BAUD, SPI_BAUD_RATE);           /* Configure Baudrate */
-	reg_set(SPI_ADDR + CTRLA, 0x02);                    /* SERCOM SPI ENABLE  */
-	while(reg_rd((SPI_ADDR + SYNCBUSY)) & (1 << 1))     /* Wait ENABLE busy   */
+	reg16_wr(SPI_ADDR + SPI_BAUD, SPI_BAUD_RATE);       /* Configure Baudrate */
+	reg_set(SPI_ADDR + SPI_CTRLA, 0x02);                /* SERCOM SPI ENABLE  */
+	while(reg_rd((SPI_ADDR + SPI_SYNCBUSY)) & (1 << 1)) /* Wait ENABLE busy   */
 		;
 }

@@ -60,19 +60,19 @@ void	uart_init(u8 sercom)
 	sercom_init(sercom, 1);
 
 	/* Reset UART (set SWRST) */
-	reg_wr((UART_ADDR + CTRLA), 0x01);
+	reg_wr((UART_ADDR + USART_CTRLA), 0x01);
 
 	/* Wait end of software reset */
-	while(reg_rd(UART_ADDR + SYNCBUSY) & 0x01)
+	while(reg_rd(UART_ADDR + USART_SYNCBUSY) & 0x01)
 		;
-	reg_wr(UART_ADDR + CTRLA, 0x40000000           /* DORD LSB first          */
+	reg_wr(UART_ADDR + USART_CTRLA, 0x40000000           /* DORD LSB first          */
 			| 0x100000                             /* RXPO PAD[1] TXPO PAD[0] */
 			| 0x04);                               /* Internal Clock          */
 	/* Enable TX and RX */
-	reg_wr(UART_ADDR + CTRLB, 0x00030000);
+	reg_wr(UART_ADDR + USART_CTRLB, 0x00030000);
 
 	/* Configure Baudrate */
-	reg16_wr(UART_ADDR + BAUD, CONF_BAUD_RATE);
+	reg16_wr(UART_ADDR + USART_BAUD, CONF_BAUD_RATE);
 
 	/* Power up the PMOD Module */
 	reg_wr(PORTA_ADDR + P_DIRSET, 1 << 4);
@@ -90,9 +90,9 @@ void	uart_init(u8 sercom)
 void uart_putc(unsigned char c)
 {
 	/* Read INTFLAG and wait DRE (Data Register Empty) */
-	while ((reg_rd(UART_ADDR + INTFLAG) & 0x01) == 0)
+	while ((reg_rd(UART_ADDR + USART_INTFLAG) & 0x01) == 0)
 		;
-	reg16_wr((UART_ADDR + DATA), c);                            /* Write data */
+	reg16_wr((UART_ADDR + USART_DATA), c);                            /* Write data */
 }
 
 /**
@@ -189,10 +189,10 @@ void	uart_gets(u8 *str)
 	while (1)
 	{
 		/* Wait for start bit */
-		while ((reg8_rd(UART_ADDR + INTFLAG) & (1 << 2)) == 0)
+		while ((reg8_rd(UART_ADDR + USART_INTFLAG) & (1 << 2)) == 0)
 			;
 		/* Get the data */
-		str[i] = (reg16_rd(UART_ADDR + DATA));
+		str[i] = (reg16_rd(UART_ADDR + USART_DATA));
 		if (str[i] == '\n'
 				|| str[i] == '\0'
 				|| str[i] == '\r')

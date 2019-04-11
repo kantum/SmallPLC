@@ -73,7 +73,7 @@ void	can_rd_rx(u8 buff, u8 *data, u8 ptr, u8 len)
  * @param addr Register address
  * @param data Data to write
  */
-void	can_wr_reg(u8 addr, u8 *data, u8 len)
+void	can_wr_reg(u8 addr, const u8 *data, u8 len)
 {
 	spi_cs(ON);
 	spi_transfer(WRITE);

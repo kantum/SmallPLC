@@ -44,15 +44,32 @@ void	can_init()
  * @param id The CAN identifier
  *
  */
-void	can_tx_id(u32 id)
+void	can_tx_id(t_can_msg *msg)
 {
 	u8	tmp;
 
-	id = id & 0x7ff;                                     /* Keep Only 11 Bits */
-	tmp = (u8)(id >> 3);
-	can_wr_reg(TXB0SIDH, &tmp, 1);                       /* Identifier High   */
-	tmp = (u8)((id & 0x7) << 5);
-	can_wr_reg(TXB0SIDL, &tmp, 1);                       /* Identifier Low    */
+	if (msg->id > 0x7FF)
+	{
+		msg->id &= 0x1FFFFFFF;                           /* Keep Only 29 Bits */
+		tmp = (u8)msg->id & 0xFF;
+		can_wr_reg(TXB0EID0, &tmp, 1);
+		tmp = (u8)((msg->id & 0xFF00) >> 8);
+		can_wr_reg(TXB0EID8, &tmp, 1);
+		tmp = (u8)((msg->id & 0x30000) >> 16);
+		tmp |= 0x8;                                      /* Set EXIDE bit     */
+		tmp |= (u8)((msg->id & 0x7) << 5);
+		can_wr_reg(TXB0SIDL, &tmp, 1);                   /* Identifier Low    */
+		tmp = (u8)(msg->id >> 3);
+		can_wr_reg(TXB0SIDH, &tmp, 1);                   /* Identifier High   */
+	}
+	else
+	{
+		msg->id &= 0x7FF;                                /* Keep Only 11 Bits */
+		tmp = (u8)(msg->id >> 3);
+		can_wr_reg(TXB0SIDH, &tmp, 1);                   /* Identifier High   */
+		tmp = (u8)((msg->id & 0x7) << 5);
+		can_wr_reg(TXB0SIDL, &tmp, 1);                   /* Identifier Low    */
+	}
 }
 
 /**
@@ -74,7 +91,7 @@ void	can_rtr_dlc(t_can_msg *msg)
  */
 void	can_send(t_can_msg *msg)
 {
-	can_tx_id(msg->id);                                    /* ID Can          */
+	can_tx_id(msg);                                    /* ID Can          */
 	can_bit_mod(TXB0CTRL, 0x3, (msg->prio & 0x3));         /* Priority Bits   */
 	can_bit_mod(TXB0CTRL | CANCTRL, 1 << 3, 1 << 3);       /* One Shoot Mode  */
 	can_rtr_dlc(msg);                                      /* RTR And DLC     */
@@ -119,9 +136,9 @@ void	can_rx_len(t_can_msg *msg, u8 *buf)
  * @param len Data Length Code
  * @param data Data Array
  **/
-void	can_set_msg(t_can_msg *msg, u16 id, u8 prio, u8 rtr, u8 len, u8 *data)
+void	can_set_msg(t_can_msg *msg, u32 id, u8 prio, u8 rtr, u8 len, u8 *data)
 {
-	msg->id     = id   & 0x7FF;
+	msg->id     = id;
 	msg->prio   = prio & 0x3;
 	msg->rtr    = rtr  & 0x1;
 	msg->len	= len;

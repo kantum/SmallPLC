@@ -36,13 +36,13 @@ typedef struct				s_can_msg
 } __attribute__ ((packed))	t_can_msg;
 
 void	can_init();
-void	can_tx_id(u32 id);
+void	can_tx_id(t_can_msg *msg);
 void	can_baud_rate();
 void	can_rtr_dlc(t_can_msg *msg);
 void	can_send(t_can_msg *msg);
 void	can_rx_id(t_can_msg *msg, u8 *buf);
 void	can_receive(t_can_msg *msg, u8 buff);
-void	can_set_msg(t_can_msg *msg, u16 id, u8 prio, u8 rtr, u8 len, u8 *data);
+void	can_set_msg(t_can_msg *msg, u32 id, u8 prio, u8 rtr, u8 len, u8 *data);
 
 #endif
 /* EOF */
