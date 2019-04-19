@@ -145,7 +145,8 @@ void	main(void)
 	counter = 0;
 	for (u8 i = 0; i < 8; i++)
 		tmp[i] = 0x42;
-	can_set_msg(&colis, 128267, 0b11, 0, 7, tmp);
+	//can_set_msg(&colis, 128267, 0b11, 0, 7, tmp);
+	can_set_msg(&colis, 42, 0b11, 0, 7, tmp);
 	for (u32 i = 0; i < 200; i++)
 		can_set_msg(&receive[i], 0x0, 0b0, 0, 0, tmp);
 	can_send(&colis);

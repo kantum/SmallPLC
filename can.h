@@ -7,7 +7,7 @@
 #include "error.h"
 
 #define CLK		8000000                         /* Clock Frequency            */
-#define TQ		0.000001                        /* Time Quantum               */
+#define TQ		0.0000005                       /* Time Quantum               */
 #define BRP		(u8)(TQ * CLK) / 2 - 1          /* Baud Rate Prescaler Bits   */
 #define SJW		0                               /* Synchronization Jump Width */
 #define PROP	2                               /* PropSeg Size               */
@@ -16,9 +16,9 @@
 #define SAM		0                               /* Sample Point Config Bit    */
 #define SOF		0                               /* Start-Of-Frame Signal Bit  */
 #define WAKFIL	0                               /* Wake-Up Filter Bit         */
-#define PS1		3                               /* PS1 Size                   */
+#define PS1		2                               /* PS1 Size                   */
 #define PHSEG1	PS1 - 1                         /* PHSEG1 Register Value      */
-#define PS2		4                               /* PS2 Size                   */
+#define PS2		3                               /* PS2 Size                   */
 #define PHSEG2	PS2 - 1                         /* PHSEG2 Register Value      */
 
 /**
