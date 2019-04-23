@@ -51,15 +51,15 @@ void	can_tx_id(t_can_msg *msg)
 	if (msg->id > 0x7FF)
 	{
 		msg->id &= 0x1FFFFFFF;                           /* Keep Only 29 Bits */
-		tmp = (u8)msg->id & 0xFF;
+		tmp = (u8)(msg->id & 0xFF);
 		can_wr_reg(TXB0EID0, &tmp, 1);
 		tmp = (u8)((msg->id & 0xFF00) >> 8);
 		can_wr_reg(TXB0EID8, &tmp, 1);
 		tmp = (u8)((msg->id & 0x30000) >> 16);
 		tmp |= 0x8;                                      /* Set EXIDE bit     */
-		tmp |= (u8)((msg->id & 0x7) << 5);
+		tmp |= (u8)((msg->id & 0x1C0000) >> 13);
 		can_wr_reg(TXB0SIDL, &tmp, 1);                   /* Identifier Low    */
-		tmp = (u8)(msg->id >> 3);
+		tmp = (u8)((msg->id & 0x1FE00000) >> 21);
 		can_wr_reg(TXB0SIDH, &tmp, 1);                   /* Identifier High   */
 	}
 	else
@@ -100,21 +100,26 @@ void	can_send(t_can_msg *msg)
 	can_bit_mod(CANINTF, 0x4, 0x0);                        /* Clean flag      */
 }
 
+
 /**
- * @brief Parse RXB0SIDH and RXB0SIDL to extract the received CAN identifier
+ * @brief Parse mcp2515 registers to extract the received CAN identifier
  * @param msg A pointer to the CAN structure received
+ * @param buf Which buffer to read, BUFF0 or BUFF1
  */
 void	can_rx_id(t_can_msg *msg, u8 *buf)
 {
-	msg->id = buf[0] << 3 | (buf[1] & 0xE0) >> 5;
+	msg->id = ((u32)buf[0] << 3)                         /* RXBnSIDH[7-0]     */
+			| ((u32)(buf[1]) >> 5);                      /* RXBnSIDL[7-4]     */
 
-	if ((buf[1] & (1 << 3)) != 0)           /* Check If Extended */
+	if ((buf[1] & (1 << 3)) != 0)                        /* Check If Extended */
 	{
 		msg->ide = 1;
-		if (buf[1] & (1 << 4))                  /* Check the SRR */
-			msg->srr = 1; 
-		msg->id <<= 16;
-		msg->id |= (buf[3]) << 8 | buf[4];
+		if (buf[1] & (1 << 4))                           /* Check the SRR     */
+			msg->srr = 1;
+		msg->id <<= 18;
+		msg->id |= ((buf[1] & 0x3) << 16)                /* RXBnSIDL[1-0]     */
+				| (buf[2] << 8)                          /* RXBnEID8[7-0]     */
+				| buf[3];                                /* RXBnEID0[7-0]     */
 	}
 }
 

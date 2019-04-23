@@ -74,6 +74,9 @@ void	uart_clear(void)
 #define RX0OVR	1 << 6
 #define RX1OVR	1 << 7
 
+/*
+ * @brief Interrupt code
+ */
 void EIC_Handler(void)
 {
 	flags = reg_rd(EIC_ADDR + EIC_INTFLAG);
@@ -145,8 +148,8 @@ void	main(void)
 	counter = 0;
 	for (u8 i = 0; i < 8; i++)
 		tmp[i] = 0x42;
-	//can_set_msg(&colis, 128267, 0b11, 0, 7, tmp);
-	can_set_msg(&colis, 42, 0b11, 0, 7, tmp);
+	can_set_msg(&colis, 0x1AAAAAAA, 0b11, 0, 7, tmp);
+	//can_set_msg(&colis, 0x1FF, 0b11, 0, 7, tmp);
 	for (u32 i = 0; i < 200; i++)
 		can_set_msg(&receive[i], 0x0, 0b0, 0, 0, tmp);
 	can_send(&colis);
