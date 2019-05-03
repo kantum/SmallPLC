@@ -8,6 +8,7 @@
 #include "delay.h"
 #include "color.h"
 #include "error.h"
+#include "transfer.h"
 
 t_can_msg	receive[200];
 u32			counter;
@@ -77,7 +78,7 @@ void	uart_clear(void)
 /*
  * @brief Interrupt code
  */
-void EIC_Handler(void)
+void	EIC_Handler(void)
 {
 	flags = reg_rd(EIC_ADDR + EIC_INTFLAG);
 	if (flags & (1 << 2))
@@ -124,19 +125,13 @@ void EIC_Handler(void)
 	}
 }
 
-void can_clear_register()
-{
-	for (u32 i = 0; i < 254; i++)
-		can_wr_reg(i, "\x0", 1);
-}
-
 /**
  * @brief Don't you know main function ? Very handy one...
  */
 void	main(void)
 {
-	u8			tmp[8];
-	t_can_msg	colis;
+	u8			buffer[8];
+	t_can_msg	msg;
 
 	leds_init();
 	clock_init();
@@ -145,18 +140,10 @@ void	main(void)
 	interrupt_init(1);
 	can_init();
 
-	counter = 0;
-	for (u8 i = 0; i < 8; i++)
-		tmp[i] = 0x42;
-	can_set_msg(&colis, 0x1AAAAAAA, 0b11, 0, 7, tmp);
-	//can_set_msg(&colis, 0x1FF, 0b11, 0, 7, tmp);
-	for (u32 i = 0; i < 200; i++)
-		can_set_msg(&receive[i], 0x0, 0b0, 0, 0, tmp);
-	can_send(&colis);
 	while (1)
 	{
 		reg_wr(PORTB_ADDR + P_OUTTGL, 1 << 10 | 1 << 11);
-		delay(10);
+		uart_to_can(&msg, buffer);
 	}
 }
 /* EOF */

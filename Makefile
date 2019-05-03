@@ -8,7 +8,7 @@
 CROSS=arm-none-eabi-
 TARGET=firmware
 
-SRC = main.c uart.c spi.c mcp2515.c can.c delay.c error.c samd21.c
+SRC = main.c uart.c spi.c mcp2515.c can.c delay.c error.c samd21.c transfer.c
 ASRC = startup.s
 
 CC = $(CROSS)gcc
